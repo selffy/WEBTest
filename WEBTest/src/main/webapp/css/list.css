@@ -1,0 +1,36 @@
+@charset "UTF-8";
+
+ul{
+	list-style-type: square;
+	position: relative;
+	
+}
+
+ul li{
+	float:left;
+	width: 100px;
+}
+
+ol {
+	clear: both;
+}
+
+ol li{
+	float: left;
+	width: 100px;
+	
+}
+
+dl{
+	position:relative;
+	clear: both;	
+	font-weight: bold;
+	font-size: 10px;
+}
+
+dd{
+	float: left;
+	font-weight: bold;
+	font-style: italic;
+	font-size: 8px;
+}

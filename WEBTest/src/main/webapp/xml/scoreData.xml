@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scoreData>
+	<student>
+		<number>2022001</number>
+		<English>100</English>
+		<Math>90</Math>
+	</student>
+	<student>
+		<number>2022002</number>
+		<English>90</English>
+		<Math>80</Math>
+	</student>
+	<student>
+		<number>2022003</number>
+		<English>70</English>
+		<Math>60</Math>
+	</student>
+</scoreData>
