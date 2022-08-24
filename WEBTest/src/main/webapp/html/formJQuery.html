@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>form 엘리먼트 연습 - jQuery 버젼</title>
+<style>
+	input, button {display: block; margin-bottom: 10px;}
+	input[type="radio"], input[type="reset"], input[type="submit"]
+	 {display: inline;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+	integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" 
+	crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+$(function() {
+	$("#formSubmit").click(function() {
+		if($("input[name='txt1']").val()=="") {
+			alert("텍스트를 입력해 주세요!");
+			return false;
+		} else if ($("input[type='checkbox']:checked").val()!="on") {
+			alert("체크박스에 체크해 주세요!");
+			return false;
+		}	else if (!$("input[name='rd1']:checked").val()) {
+			alert("라디오를 선택해 주세요!");
+			return false;
+		}	else if ($("textarea[name='ta1']").val().length<10) {
+			alert("텍스트에어리어에 글을 10자이상 입력해 주세요!");
+			return false;
+		}
+		else {
+			$("form[name='userData']").submit();
+		}
+	});
+});
+</script>
+</head>
+<body>
+<form name="userData" action="../jsp/formProc.jsp">
+	<input type="text" name="txt1" />
+	<input type="password" name="pwd1" />
+	<input type="button"  value="버튼1" />
+	<input type="checkbox" name="cb1" />
+	<input type="radio" name="rd1" value="0" />
+	<input type="radio" name="rd1" value="1" /><br />
+	<textarea name="ta1"></textarea>
+	<button>버튼2</button>
+	<hr />
+	<input type="reset" value="취소" />&nbsp;
+	<!--
+	<input type="button" value="전송" onclick="javascript:checkForm();"/>
+	-->
+	<button id="formSubmit">전송</button>
+</form>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

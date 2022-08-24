@@ -1,29 +1,17 @@
 div {
 	width: 1000px;
 	height: 800px;
-	background-color: #ffcc00;
+	background-color: #FFCC00;
 }
 
-
-#xmlPara {
-	width: 1000px;
-	height: 400px;
-	background-color: #0000ff;
-	
-}
-
-#jsonPara {
-	width: 1000px;
-	height: 400px;
-	background-color: #0000ff;
-	
-	
+p {
+	width: 800px;
+	height: 300px;
+	background-color: #0000FF;
 }
 
 img {
-	width: 400px;
-	height: 600px;
+	width: 200px;
+	height: 200px;
 	border-radius: 0.5;
-	
-	
 }
