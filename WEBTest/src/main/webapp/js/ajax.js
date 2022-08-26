@@ -1,110 +1,87 @@
+var ajax = {};
+ajax.xhr = {};
 
-//패키지 생성
-var ajax ={};
-
-//XHR객체
-ajax.xhr ={};
-
-ajax.xhr.Request = function(url, params, callback, method){
+ajax.xhr.Request = function(url, params, callback, method, applyObj) {
 	this.url = url;
 	this.params = params;
 	this.callback = callback;
 	this.method = method;
+	this.applyObj = (applyObj == null) ? null : applyObj;
+	
 	this.send();
-	
-		
 }
-//추가메소드 확장
-ajax.xhr.Request.prototype ={
-	
-	//XHR 객체 획득
-	getXMLHttpRequest : function(){
-		return new XMLHttpRequest();
-	},//getXMLHttpRequest
-
-	//요청을 전송
-	send : function(){
-		//개별로 사용할 XHR 객체를 획득
+ajax.xhr.Request.prototype = {
+	getXMLHttpRequest: function() {
+		if (window.ActiveXObject) {
+			try {
+				return new ActiveXObject("Msxml2.XMLHTTP");
+			} catch(e) {
+				try {
+					return new ActiveXObject("Microsoft.XMLHTTP");
+				} catch(e1) { return null; }
+			}
+		} else if (window.XMLHttpRequest) {
+			return new XMLHttpRequest();
+		} else {
+			return null;
+		}		
+	},
+	send: function() {
 		this.req = this.getXMLHttpRequest();
-		// HTTP메소드가 있으면 사용하고 없으면 GET
-		var httpMethod = this.method ? this.method : "GET";
-		if(httpMethod != "GET" && httpMethod != "POST") httpMethod = "GET";
 		
-		// 요청데이터 설정
-		var httpParams = (this.params == null || this.params == "" ) ? null : this.parmams;
-		
-		// URL 설정
+		var httpMethod = this.method ? this.method : 'GET';
+		if (httpMethod != 'GET' && httpMethod != 'POST') {
+			httpMethod = 'GET';
+		}
+		var httpParams = (this.params == null || this.params == '') ? 
+		                 null : this.params;
 		var httpUrl = this.url;
-		
-		// HTTP메소드가 GET일 때 URL뒤에 요청데이터 붙인다.
-		if(httpMethod == "GET" && httpParams != null) httpUrl = httpUrl + "?" + httpParams;
-		
-		//OPEN 수행
-		this.req.open(httpMethod, httpUrl, true); //xhr 오픈
-		
-		// 클라이언트가 보내는 데이터가 인코딩된 폼데이터라고 서버에 알려주는 역할
-		this.req.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-		
-		//요청객체가 공유되지 못하도록 지역변수에 저장
+		if (httpMethod == 'GET' && httpParams != null) {
+			httpUrl = httpUrl + "?" + httpParams;
+		}
+		this.req.open(httpMethod, httpUrl, true);
+		this.req.setRequestHeader(
+			'Content-Type', 'application/x-www-form-urlencoded');
 		var request = this;
-		
-		//콜백함수 정의
-		this.req.onreadystatechange = function(){
-			//SEND함수의 지역변수인 request를onStateChange내에서 thisㄹ 쓰기 위해 call 사용
-			//call함수 형식: 함수명.call(함수내에서 this가 되어야 하는 객체)
+		this.req.onreadystatechange = function() {
 			request.onStateChange.call(request);
 		}
-		
-		//POST인 경우 파라미터, GET인 경우에는 주소에 파라미터 붙여서 보냈으므로 안보냄
-		this.req.send(httpMethod == "POST" ? httpParams : null);
-	}, //send
-
-	onStateChange : function() {
-		//this==request(call함수를 사용했기 때문에)
-		this.callback(this.req);
+		this.req.send(httpMethod == 'POST' ? httpParams : null);
+	},
+	onStateChange: function() {
+		if (this.applyObj) {
+			this.callback.call(this.applyObj, this.req);
+		} else {
+			this.callback(this.req);
+		}
 	}
+}
 
-} //ajax.xhr.Request.prototype
-
-//ajax 패키지 내에 이벤트 객체 
 ajax.Event = {};
+ajax.Event.addListener = function(element, name, observer, useCapture) {
+    useCapture = useCapture || false;
 
-//이벤트리스너 추가(이벤트 타겟객체, 이벤트명, 옵저버(=이벤트리스너), useCapture여부)
-ajax.Event.addListener = function(element, name, observer, useCapture){
-	useCapture == useCapture || false;
-	//웹표준브라우저에서 이벤트리스너 추가 
-	if(element.addEventListener) {
-		element.addEventListener(name, observer, useCapture);	
-	// 구버전 IE 5,6에서 이벤트리스너 추가
-	} else if(element.attachEvent) {
+	if (element.addEventListener) {
+		element.addEventListener(name, observer, useCapture);
+	} else if (element.attachEvent) {
 		element.attachEvent('on' + name, observer);
 	}
 }
-
-//이벤트리스너 제거
-ajax.Event.removeListener = function(element, name, observer, userCapture){
-	useCapture == useCapture || false;
-	if(element.removeEventListener) {
-		element.removeEventListener(name, observer, useCapture);	
-	} else if(element.dettachEvent) {
-		element.dettachEvent('on' + name, observer);
+ajax.Event.removeListener = function(element, name, observer, useCapture) {
+	useCapture = useCapture || false;
+	
+	if (element.removeEventListener) {
+		element.removeEventListener(name, observer, useCapture);
+	} else if (element.detachEvent) {
+		element.detachEvent('on' + name, observer);
 	}
 }
-
-//이벤트 타겟 획득 
 ajax.Event.getTarget = function(event) {
-	if(event == null){
-		return null;
-	}
-	if(event.target){
-		return event.target; //웹표준브라우저
-	} else if(event.srcElement){
-		return event.srcElement; //IE 5,6 브라우저
-	}
-		return null;
+	if (event == null) return null;
+	if (event.target) return event.target;
+	else if (event.srcElement) return event.srcElement;
+	return null;
 }
-
-//
 ajax.Event.getMouseXY = function(event) {
 	var mouseX = event.clientX;
 	var mouseY = event.clientY;
@@ -112,56 +89,186 @@ ajax.Event.getMouseXY = function(event) {
 	var dd = document.documentElement;
 	var db = document.body;
 	if (dd) {
-	mouseX += dd.scrollLeft;
-	mouseY += dd.scrollTop;
+		mouseX += dd.scrollLeft;
+		mouseY += dd.scrollTop;
 	} else if (db) {
-	mouseX += db.scrollLeft;
-	mouseY += db.scrollTop;
+		mouseX += db.scrollLeft;
+		mouseY += db.scrollTop;
 	}
 	return {x: mouseX, y: mouseY};
-	}
-
-//왼쪽마우스가 눌렸는지
+}
 ajax.Event.isLeftButton= function(event) {
-	return (event.which) ?
-	event.which == 1 && event.button == 0 :
-	(event.type == 'click') ? event.button == 0 : event.button == 1;
-	}
-	
-//오른쪽마우스가 눌렸는지
+	return (event.which) ? 
+	       event.which == 1 && event.button == 0 :
+	       (event.type == 'click') ? event.button == 0 : event.button == 1;
+}
 ajax.Event.isRightButton = function(event) {
 	return event.button == 2;
-	}
-
-//이벤트의 전달을 중지	
+}
 ajax.Event.stopPropagation = function(event) {
 	if (event.stopPropagation) {
-	event.stopPropagation();
+	    event.stopPropagation();
 	} else {
-	event.cancelBubble = true; //IE 5,6
+	    event.cancelBubble = true;
 	}
 }
-
-//디폴트이벤트: 웹브라우저가 기본적으로 가지고 있으면서 발생시키는 이벤트, 사용자정의 이벤트와 구분됨
-//디폴트이벤트 방지 (예를 들어 a링크 눌러도 이동 안되도록 방지)
 ajax.Event.preventDefault = function(event) {
 	if (event.preventDefault) {
-	event.preventDefault();
+	    event.preventDefault();
 	} else {
-	event.returnValue = false;
+	    event.returnValue = false;
 	}
 }
-
-//편의상 이벤트 전달방지와 디폴트이벤트방지를 동시에 하기 위한 메소드
 ajax.Event.stopEvent = function(event) {
 	ajax.Event.stopPropagation(event);
 	ajax.Event.preventDefault(event);
 }
-
-//객체에 리스너들을 바인딩(묶음)
-//apply메소드를 사용하여 앞에 있는 func내에서 this를 정의함
 ajax.Event.bindAsListener = function(func, obj) {
 	return function() {
-	return func.apply(obj, arguments);
+		return func.apply(obj, arguments);
+	}
+}
+
+ajax.GUI = {};
+ajax.GUI.setOpacity = function(el, opacity) {
+	if (el.filters) {
+		el.style.filter = 'alpha(opacity=' + opacity * 100 + ')';
+	} else {
+		el.style.opacity = opacity;
+	}
+}
+ajax.GUI.getStyle = function(el, property) {
+	var value = null;
+	var dv = document.defaultView;
+	
+	if (property == 'opacity' && el.filters) {// IE opacity
+		value = 1;
+		try {
+			value = el.filters.item('alpha').opacity / 100;
+		} catch(e) {}
+	} else if (el.style[property]) {
+		value = el.style[property];
+	} else if (el.currentStyle && el.currentStyle[property]) {
+		value = el.currentStyle[property];
+	} else if ( dv && dv.getComputedStyle ) {
+		// �빮�ڸ� �ҹ��ڷ� ��ȯ�ϰ� �� �տ� '-'�� ���δ�.
+		var converted = '';
+		for(i = 0, len = property.length;i < len; ++i) {
+			if (property.charAt(i) == property.charAt(i).toUpperCase()) {
+				converted = converted + '-' + 
+				            property.charAt(i).toLowerCase();
+			} else {
+				converted = converted + property.charAt(i);
+			}
+		}
+		if (dv.getComputedStyle(el, '').getPropertyValue(converted)) {
+			value = dv.getComputedStyle(el, '').getPropertyValue(converted);
+		}
+	}
+	return value;
+}
+
+ajax.GUI.getXY = function(el) {
+	// el�� ������ ���ԵǾ� �־�� �ϰ�, ȭ�鿡 ������ �Ѵ�.
+	if (el.parentNode === null || el.style.display == 'none') {
+		return false;
+	}
+	
+	var parent = null;
+	var pos = [];
+	var box;
+	
+	if (document.getBoxObjectFor) { // gecko ���� ���
+		box = document.getBoxObjectFor(el);
+		pos = [box.x, box.y];
+	} else { // ��Ÿ ������
+		pos = [el.offsetLeft, el.offsetTop];
+		parent = el.offsetParent;
+		if (parent != el) {
+			while (parent) {
+				pos[0] += parent.offsetLeft;
+				pos[1] += parent.offsetTop;
+				parent = parent.offsetParent;
+			}
+		}
+		// ������ ���ĸ��� 'absolute' postion�� ���
+		// body�� offsetTop�� �߸� ����ϹǷ� �����ؾ� �Ѵ�.
+		var ua = navigator.userAgent.toLowerCase();
+		if (
+			ua.indexOf('opera') != -1
+			|| ( ua.indexOf('safari') != -1 && this.getStyle(el, 'position') == 'absolute' )
+		) {
+			pos[1] -= document.body.offsetTop;
+		}
+	}
+	
+	if (el.parentNode) { parent = el.parentNode; }
+	else { parent = null; }
+	
+	// body �Ǵ� html �̿��� �θ� ��� �߿� ��ũ�ѵǾ� �ִ�
+	// ������ �ִٸ� �˸°� ó���Ѵ�.
+	while (parent && parent.tagName != 'BODY' && parent.tagName != 'HTML') {
+		pos[0] -= parent.scrollLeft;
+		pos[1] -= parent.scrollTop;
+		
+		if (parent.parentNode) { parent = parent.parentNode; }
+		else { parent = null; }
+	}
+	return {x: pos[0], y: pos[1]};
+}
+ajax.GUI.getX = function(el) {
+	return ajax.GUI.getXY(el).x;
+}
+ajax.GUI.getY = function(el) {
+	return ajax.GUI.getXY(el).y;
+}
+ajax.GUI.getBounds = function(el) {
+	var xy = ajax.GUI.getXY(el);
+	return {
+		x: xy.x,
+		y: xy.y,
+		width: el.offsetWidth,
+		height: el.offsetHeight
+	};
+}
+ajax.GUI.setXY = function(el, x, y) {
+	var pageXY = ajax.GUI.getXY(el);
+	if (pageXY === false) { return false; }
+	var position = ajax.GUI.getStyle(el, 'position');
+	if (!position || position == 'static') {
+		el.style.position = 'relative';
+	}
+	var delta = {
+		x: parseInt( ajax.GUI.getStyle(el, 'left'), 10 ),
+		y: parseInt( ajax.GUI.getStyle(el, 'top'), 10 )
+	};
+	if ( isNaN(delta.x) ) { delta.x = 0; }
+	if ( isNaN(delta.y) ) { delta.y = 0; }
+	
+	if (x != null) {
+		el.style.left = (x - pageXY.x + delta.x) + 'px';
+	}
+	if (y != null) {
+		el.style.top = (y - pageXY.y + delta.y) + 'px';
+	}
+	
+	return true;
+}
+
+ajax.Class = {
+	extend: function(childsProto, parentFunc, addFunc, parentProto) {
+		if (parentProto != null) {
+			childsProto.parent = parentProto;
+		}
+		if (parentFunc != null) {
+			for (var property in parentFunc) {
+				childsProto[property] = parentFunc[property];
+			}
+		}
+		if (addFunc != null) {
+			for (var property in addFunc) {
+				childsProto[property] = addFunc[property];
+			}
+		}
 	}
 }
